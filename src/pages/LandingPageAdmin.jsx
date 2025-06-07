@@ -313,7 +313,7 @@ function LandingPageAdmin() {
                     </thead>
                     <tbody className="bg-white divide-y divide-slate-100">
                       {paginatedEksemplar.length > 0 ? (
-                        paginatedEksemplar.map((item, index) => (
+                        paginatedEksemplar.map((item, ) => (
                           <tr
                             key={item.id}
                             className="hover:bg-slate-50 transition-colors duration-200 group"

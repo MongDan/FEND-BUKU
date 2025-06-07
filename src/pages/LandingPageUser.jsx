@@ -1,12 +1,10 @@
-import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import {
-  FaCheckCircle,
   FaFilter,
   FaListUl,
-  FaRegClock,
-  FaSearch,
+  FaSearch
 } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
 function LandingPageUser() {
   const [books, setBooks] = useState([]);
@@ -75,44 +73,52 @@ function LandingPageUser() {
     setCurrentPage(1);
   }, [query, statusFilter]);
 
-  const handlePinjam = async (bukuId) => {
-    const tersediaList = eksemplarData.filter(
-      (e) => e.bukuId === bukuId && e.status === "TERSEDIA"
+ const handlePinjam = async (bukuId) => {
+  const tersediaList = eksemplarData.filter(
+    (e) => e.bukuId === bukuId && e.status === "TERSEDIA"
+  );
+
+  if (!tersediaList.length) {
+    alert("Tidak ada eksemplar tersedia.");
+    return;
+  }
+
+  const eksemplarId = tersediaList[0].id;
+
+  try {
+    const response = await fetch(
+      "https://be-appbuku-production-6cfd.up.railway.app/peminjaman",
+      {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ eksemplarId }),
+      }
     );
 
-    if (!tersediaList || tersediaList.length === 0) {
-      alert("Tidak ada eksemplar tersedia.");
+    const data = await response.json();
+
+    if (!response.ok) {
+      alert(data.message || "Gagal mengirim permintaan peminjaman");
       return;
     }
 
-    const eksemplarId = tersediaList[0].id;
+    alert("Permintaan peminjaman berhasil dikirim!");
 
-    try {
-      const response = await fetch(
-        "https://be-appbuku-production-6cfd.up.railway.app/peminjaman",
-        {
-          method: "POST",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ eksemplarId }),
-        }
-      );
+    // Refresh eksemplar
+    const res = await fetch("https://be-appbuku-production-6cfd.up.railway.app/eksemplarBuku", {
+      credentials: "include",
+    });
+    const eksemplarRes = await res.json();
+    if (eksemplarRes?.data) setEksemplarData(eksemplarRes.data);
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        alert(data.message || "Gagal mengirim permintaan");
-          return;
-        }
-
-        alert("Permintaan peminjaman berhasil dikirim!");
-      } catch (err) {
-        console.error(err);
-        alert("Terjadi kesalahan saat meminjam");
-      }
-  };
+  } catch (err) {
+    console.error(err);
+    alert("Terjadi kesalahan saat meminjam");
+  }
+};
   
 
   return (
